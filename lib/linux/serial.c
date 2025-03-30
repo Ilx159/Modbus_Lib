@@ -57,7 +57,7 @@ void settings(){
     
 }
 
-coid open_serial(char *device){
+int open_serial(char *device){
     serial_port = open(device, O_RDWR | O_NDELAY | O_NOCTTY);
     if (serial_port < 0) {
         printf("Error %i when opening %s\n", errno, strerror(errno));
@@ -73,7 +73,7 @@ void close_serial(){
     close(serial_port);
 }
 
-void read_serial(){
+int read_serial(){
 
     int num_bytes;
 
@@ -86,12 +86,15 @@ void read_serial(){
             fflush(stdout);
         }
     }
+    return num_bytes;
 }
 
-void write_serial(char *menssage){
+int write_serial(char *menssage){
 
     strcpy(write_buf, menssage);
     len = strlen(write_buf);
     len = write(serial_port, write_buf, len);
     printf("wrote %d bytes in UART\n", len);
+
+    return len;
 }

@@ -1,11 +1,14 @@
 #include <stdio.h>
-#include "libs/serial.h"
+#include "serial.h"
 
 int main() {
-
-    open_serial("/dev/ttyUSB0");
+    char porta[32];
+    printf("Digite a localização da porta:\n");
+    scanf("%s", porta);
+    open_serial(porta);
     write_serial("oi");
     read_serial();
     close_serial();
+    
     return 0;
 }
