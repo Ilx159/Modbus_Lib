@@ -1,7 +1,25 @@
-extern int open_serial(char *device);
+#ifndef SERIAL_H
+#define SERIAL_H
 
-extern void close_serial();
+#include <termios.h>
 
-extern int read_serial();
+typedef struct
+{
+    char data_types;
+    char parity_bits;
+    char stop_bits;
+    char IX;
+    char flow_control;
+    int boundrate;
+} SerialConfig;
 
-extern int write_serial(char *mensage);
+int open_serial(const char *device, SerialConfig config);
+
+void close_serial();
+
+int read_serial();
+
+int write_serial(const char *mensage);
+
+
+#endif
