@@ -8,42 +8,103 @@
 #include <stdlib.h>
 
 
-int serial_port, len;
+
+
+static int serial_port;
+
+
 char read_buf[121]; //texto read
 char write_buf[121]; //texto write
 
-struct termios tty; //Configurações da porta serial
+static struct termios tty; //Configurações da porta serial
 
-void settings(){
+void settings(SerialConfig config){
+
     if(!isatty(serial_port)) {printf("Is not a tty");}
 
     //configuring the settings
 
-    tty.c_cflag &= ~PARENB;
-    tty.c_cflag &= ~CSTOPB;
-    tty.c_cflag &= ~CSIZE;
-    tty.c_cflag |= CS8;
-    tty.c_cflag |= CREAD | CLOCAL;
-
-    tty.c_iflag &= ~(IXON | IXOFF | IXANY);
     tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL);
-
-
-    tty.c_cflag &= ~CRTSCTS;
-
-    
-
-    tty.c_oflag = 0;
-    
-    tty.c_cc[VTIME] = 0;
-    tty.c_cc[VMIN] = 0;
 
     tty.c_lflag &= ~ICANON; // Non-canonical mode
     tty.c_lflag &= ~ECHO; // Disable echo
     tty.c_lflag &= ~ECHOE; // Disable erasure
     tty.c_lflag &= ~ECHONL; // Disable new-line echo
     tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
-    cfsetspeed(&tty, B115200);
+    tty.c_cflag |= CREAD | CLOCAL;
+    tty.c_cflag &= ~CSIZE;
+    tty.c_oflag = 0;
+    tty.c_cc[VTIME] = 0;
+    tty.c_cc[VMIN] = 0;
+
+    //user config
+    
+    //flow_control
+    if(config.flow_control == 1)
+        tty.c_cflag |= CRTSCTS;
+    else if(config.flow_control == 0)
+        tty.c_cflag &= ~CRTSCTS;
+
+    //IXON, IXOFF, IXANY
+    if(config.IX == 1)
+        tty.c_iflag |= IXON | IXOFF | IXANY;
+    else if(config.IX == 0)
+        tty.c_iflag &= ~(IXON | IXOFF | IXANY);
+
+    //Parity_bits
+    if(config.parity_bits == 1)
+        tty.c_cflag |= PARENB;
+    else if(config.parity_bits == 0)
+        tty.c_cflag &= ~PARENB;
+
+    //stop_bits
+    if(config.stop_bits == 2)
+        tty.c_cflag |= CSTOPB; 
+    else if(config.stop_bits == 1)
+        tty.c_cflag &= ~CSTOPB;
+
+    //data_type
+    if(config.data_types == 5)
+        tty.c_cflag |= CS5;
+    else if(config.data_types == 6)
+        tty.c_cflag |= CS6;
+    else if(config.data_types == 7)
+        tty.c_cflag |= CS7;
+    else if(config.data_types == 8)
+        tty.c_cflag |= CS8;
+
+    //boundrate
+    switch (config.boundrate){
+        case 1800:
+            cfsetspeed(&tty, B1800);
+            break;
+
+        case 2400:
+            cfsetspeed(&tty, B2400);
+            break;
+        
+        case 4800:
+            cfsetspeed(&tty, B4800);
+            break;
+        
+        case 9600:
+            cfsetspeed(&tty, B9600);
+            break;
+
+        case 19200:
+            cfsetspeed(&tty, B19200);
+            break;
+
+        case 38400:
+            cfsetspeed(&tty, B38400);
+            break;
+        case 115200:
+            cfsetspeed(&tty, B115200);
+            break;
+        
+        default:
+            break;
+    }
 
     //apply settings
 
@@ -57,14 +118,14 @@ void settings(){
     
 }
 
-int open_serial(char *device){
+int open_serial(const char *device, SerialConfig config){
     serial_port = open(device, O_RDWR | O_NDELAY | O_NOCTTY);
     if (serial_port < 0) {
         printf("Error %i when opening %s\n", errno, strerror(errno));
         return -1;
     }
 
-    settings();
+    settings(config);
 
     return serial_port;
 }
@@ -76,21 +137,18 @@ void close_serial(){
 int read_serial(){
 
     int num_bytes;
-
-    while(1){
-   // if(read(serial_port, &read_buf, sizeof(read_buf)) > 0)
         num_bytes = read(serial_port, read_buf, sizeof(read_buf) - 1);
         if(num_bytes > 0){
             read_buf[num_bytes] = '\0';
             printf("%s", read_buf);
             fflush(stdout);
         }
-    }
+    
     return num_bytes;
 }
 
-int write_serial(char *menssage){
-
+int write_serial(const char *menssage){
+    int len;
     strcpy(write_buf, menssage);
     len = strlen(write_buf);
     len = write(serial_port, write_buf, len);

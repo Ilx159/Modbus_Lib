@@ -60,7 +60,8 @@
     "stdio.h": "c",
     "string.h": "c",
     "fcntl.h": "c",
-    "termios.h": "c"
+    "termios.h": "c",
+    "stdlib.h": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }
