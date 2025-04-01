@@ -12,11 +12,13 @@ int main() {
         .boundrate = 115200,
     };
 
+    char mensage[256];
     char porta[32];
+    
     printf("Digite a localização da porta:\n");
     scanf("%s", porta);
     open_serial(porta, config);
-    write_serial("Oi\n");
+    write_serial("Oi\r\n");
     while(1){
     read_serial();
     }

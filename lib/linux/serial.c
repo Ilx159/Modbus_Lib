@@ -13,8 +13,8 @@
 static int serial_port;
 
 
-char read_buf[121]; //texto read
-char write_buf[121]; //texto write
+char read_buf[256]; //texto read
+char write_buf[256]; //texto write
 
 static struct termios tty; //Configurações da porta serial
 
@@ -151,6 +151,11 @@ int write_serial(const char *menssage){
     int len;
     strcpy(write_buf, menssage);
     len = strlen(write_buf);
+    if(len <= 0){
+        printf("Invalid text");
+        return -1;
+    }
+
     len = write(serial_port, write_buf, len);
     printf("wrote %d bytes in UART\n", len);
 
