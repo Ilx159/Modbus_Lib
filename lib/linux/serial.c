@@ -8,13 +8,11 @@
 #include <stdlib.h>
 
 
+int serial_port;
 
 
-static int serial_port;
 
 
-char read_buf[256]; //texto read
-char write_buf[256]; //texto write
 
 static struct termios tty; //Configurações da porta serial
 
@@ -135,19 +133,25 @@ void close_serial(){
 }
 
 int read_serial(){
-
-    int num_bytes;
-        num_bytes = read(serial_port, read_buf, sizeof(read_buf) - 1);
+    static char read_buf[121]; //texto read
+    
+    int num_bytes = read(serial_port, read_buf, sizeof(read_buf) - 1);
         if(num_bytes > 0){
+            printf("funcionando");
             read_buf[num_bytes] = '\0';
-            printf("%s", read_buf);
+            printf("%d / %s", num_bytes, read_buf);
             fflush(stdout);
-        }
+        } else if (num_bytes < 0)
+        printf("erro na leitura");
     
     return num_bytes;
 }
 
 int write_serial(const char *menssage){
+    char write_buf[256]; //texto write
+    if(strlen(menssage) >= sizeof(write_buf)){
+        fprintf(stderr, "Mensagem muito longa, max:255 caracteres.\n");
+    }
     int len;
     strcpy(write_buf, menssage);
     len = strlen(write_buf);
@@ -158,6 +162,7 @@ int write_serial(const char *menssage){
 
     len = write(serial_port, write_buf, len);
     printf("wrote %d bytes in UART\n", len);
+    tcdrain(serial_port);
 
     return len;
 }

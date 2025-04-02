@@ -13,6 +13,9 @@ typedef struct
     int boundrate;
 } SerialConfig;
 
+extern char read_buf[256];
+
+
 int open_serial(const char *device, SerialConfig config);
 
 void close_serial();
