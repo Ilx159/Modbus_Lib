@@ -151,7 +151,8 @@ int write_serial(const char *menssage){
     char write_buf[256]; //texto write
     if(strlen(menssage) >= sizeof(write_buf)){
         fprintf(stderr, "Mensagem muito longa, max:255 caracteres.\n");
-    }
+        return -1;
+    } else {
     int len;
     strcpy(write_buf, menssage);
     len = strlen(write_buf);
@@ -165,4 +166,5 @@ int write_serial(const char *menssage){
     tcdrain(serial_port);
 
     return len;
+    }
 }
